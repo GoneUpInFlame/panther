@@ -97,6 +97,8 @@ void DownHill(const struct Option<T>& opt, T* state) {
         neighbour(opt, state, new_state);
 
     }
+    
+    delete[] new_state;
 
 }
 
