@@ -32,14 +32,6 @@ void RandomState(int n, T* lower_bound, T* upper_bound, T* state, T* new_state, 
 
 template<class T>
 void neighbour(int n, T* lower_bound, T* upper_bound, T* state, const std::function<T(const T* const)>& E, T delta, size_t t) {
-    /*T num;
-    for (int i = 0; i < n && E(state) <= E(new_state); i++) {
-        std::copy(state, state + n, new_state);
-        num = (upper_bound[i] - lower_bound[i]) / (T)1000;
-        new_state[i] -= num;
-        if (E((new_state)) >= E(state)) new_state[i] += 2 * num;
-        if(E(new_state) >= E(state)) new_state[i] -= num;
-    }*/
     T*new_state = new T[n];
     while(true) {
         RandomState(n, lower_bound, upper_bound, state, new_state, delta);
@@ -50,19 +42,6 @@ void neighbour(int n, T* lower_bound, T* upper_bound, T* state, const std::funct
     std::copy(new_state, new_state + n, state);
     delete[] new_state;
 }
-
-
-
-/*template<class T>
-void DownHill(int n, T* lower_bound, T* upper_bound, const std::function<T(const T* const)>& E, T* state) { //нету ограничений на область определения
-    T* new_state = new T[n];
-    std::copy(state, state + n, new_state);
-    neighbour(state, n, lower_bound, upper_bound, new_state, E);
-    while (E(state) > E(new_state)) {
-        std::copy(new_state, new_state + n, state);
-        neighbour(state, n, lower_bound, upper_bound, new_state, E);
-    }
-}*/
 
 template<class T>
 void DownHill(int n, T* lower_bound, T* upper_bound, T* state, const std::function<T(const T* const)>& E, T delta) {
@@ -95,20 +74,12 @@ void simulated_Annealing(int n, T* lower_bound, T* upper_bound, T* res, const st
 
     T * state = new T[n];
     a_sum(n, lower_bound, upper_bound, state);
-
-    //std::vector<T> new_state(state.begin(), state.end());
     DownHill(n, lower_bound, upper_bound, state,  E, delta);
 
     for (size_t k = 0; k < max_k; k++) {
-        //RandomState(state, lower_boundv, upper_boundv, new_state, delta);
-        //size_t state_t = 10 * max_k - (i + 1);
-        //if (P(E(state), E(new_state), state_t) >= (double)rand() / (RAND_MAX)) std::copy(new_state, new_state + n, state);
-        //DownHill(n, lower_bound, upper_bound, E, state);
         neighbour(n, lower_bound, upper_bound, state, E, delta, max_k - k);
         DownHill(n, lower_bound, upper_bound, state, E, delta);
     }
-    //DownHill(n, lower_bound, upper_bound, state, E, delta);
     std::copy(state, state + n, res);
     delete[] state;
-    //DownHill(n, lower_bound, upper_bound, E, state);
 }
