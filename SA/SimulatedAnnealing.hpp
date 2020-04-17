@@ -70,7 +70,8 @@ void DownHill(int n, T* lower_bound, T* upper_bound, T* state, const std::functi
 }
 
 template<class T>
-void simulated_Annealing(int n, T* lower_bound, T* upper_bound, T* res, const std::function<T(const T* const)>& E, T delta, size_t max_k=100) {
+void simulated_Annealing(int n, T* lower_bound, T* upper_bound, T* res,
+                         const std::function<T(const T* const)>& E, T delta, size_t max_k=100) {
 
     T * state = new T[n];
     a_sum(n, lower_bound, upper_bound, state);
