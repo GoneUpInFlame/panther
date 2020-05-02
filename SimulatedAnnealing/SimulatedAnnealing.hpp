@@ -45,42 +45,31 @@ struct Option {
 
 template<class T>
 void TemperatureJump(struct Option<T> opt, T* state, T* new_state) {
-
     for (int i = 0; i < opt.n; i++) {
         T num;
-
         do {
-
             num = new_state[i] + (2 * ((double)rand() / (RAND_MAX)) - 1) * (opt.upper_bound[i] - opt.lower_bound[i]) * opt.delta;
-
         } while (num >= opt.upper_bound[i] || num <= opt.lower_bound[i]);
-
         new_state[i] = num;
     }
-
 }
 
 //sezrch for a less-energy neighbour in accurancy-neighbourhood
 template<class T>
 void neighbour(const struct Option<T>& opt, T* state, T* new_state) {
     T num, num2, num3;
-
     for (int i = 0; i < opt.n && opt.E(state) <= opt.E(new_state); i++) {
         std::copy(state, state + opt.n, new_state);
         num = (opt.upper_bound[i] - opt.lower_bound[i]) * opt.accuracy;
         num2 = std::min(num, new_state[i] - opt.lower_bound[i]);
         num3 = std::min(num, opt.upper_bound[i] - new_state[i]);
         new_state[i] -= num2;
-
         if (opt.E((new_state)) >= opt.E(state)) 
             new_state[i] += num2;
-
         new_state[i] += num3;
-
         if (opt.E(new_state) >= opt.E(state)) 
             new_state[i] -= num3;
     }
-
 }
 
 //descent to a local minimum
@@ -88,18 +77,12 @@ template<class T>
 void DownHill(const struct Option<T>& opt, T* state) {
     T* new_state = new T[opt.n];
     std::copy(state, state + opt.n, new_state);
-
     neighbour(opt, state, new_state);
-
     while (opt.E(state) > opt.E(new_state)) {
         std::copy(new_state, new_state + opt.n, state);
-
         neighbour(opt, state, new_state);
-
     }
-    
     delete[] new_state;
-
 }
 
 template<class T>
@@ -107,18 +90,12 @@ T* simulated_Annealing(const struct Option<T>& opt, T* state) {
     std::copy(opt.lower_bound, opt.lower_bound + opt.n, state);
     T* new_state = new T[opt.n];
     std::copy(state, state + opt.n, new_state);
-
     for (size_t i = 0; i < opt.max_k; i++) {
-
         TemperatureJump(opt, state, new_state);
-
         if (opt.P(opt.E(state), opt.E(new_state), opt.Temp(opt.max_k, i)))
             std::copy(new_state, new_state + opt.n, state);
-
     }
-
     DownHill(opt, state);
-
     delete[] new_state;
     return state;
 }
