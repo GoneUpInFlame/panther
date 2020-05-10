@@ -20,11 +20,10 @@ int main() {
     num1[0] = -30;
     num2[0] = 70;
     double num[1];
-    Option<double> opt;
-    opt.lower_bound = num1, opt.upper_bound = num2, opt.E = func;
-    simulated_Annealing<double>(opt, num);
-    std::cout << about(opt);
-    std::cout << "Found " << func(num) << " at " << num[0] << "\n";
+    std::fill(num, num + 1, 20);
+    panther::SimulatedAnnealing<double> SA;
+    std::cout << SA.about();
+    std::cout << SA.search(1, num, num1, num2, func);
     return 0;
 
 }

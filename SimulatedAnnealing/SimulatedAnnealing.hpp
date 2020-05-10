@@ -1,121 +1,129 @@
-/* 
+/*
  * File:   SimulatedAnnealing.hpp
- * Author: Maksim Galynchik 
+ * Author: Maksim Galynchik
  */
 
+#ifndef SIMULATEDANNEALING_HPP
+#define  SIMULATEDANNEALING_HPP
+
 #include <sstream>
+#include <common/bbsolver.hpp>
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
 #include <functional>
 #include <algorithm>
 
-template<class T>
-struct Option {
 
-    //space dimencion
-    size_t n = 1;
+namespace panther {
+    template<class T> class NextCandidateDistribution {
+    public:
+        void temperatureJump(int n, T* new_point, const T* lower_bound, const T* upper_bound, T delta) {
+            for (int i = 0; i < n; i++) {
+                T num;
+                do {
+                    num = new_point[i] + (2 * ((double)rand() / (RAND_MAX)) - 1) * (upper_bound[i] - lower_bound[i]) * delta;
+                } while (num >= upper_bound[i] || num <= lower_bound[i]);
+                new_point[i] = num;
+            }
+        }
+    };
 
-    //number of iterations of simulated_Annealing
-    size_t max_k = 300;
+    template<class T> class CoolingSchedule {
+    public:
+        T coolingSchedule(const size_t max_k, size_t iteration) {
+            return max_k - iteration;
+        }
+    };
 
-    //DownHill step per coordinate(used in DownHill->neighbour)
-    T accuracy = 0.001;
+    template<class T> class StopingCriterion {
+    public:
+    };
 
-    //delta-neighbourhood from TemperatureJump proportional to the function domain
-    T delta = 0.25;
+    template<class T> class AcceptanceFunction {
+    public:
+        bool metropolis(const T state1, const T state2, const size_t t) {
+            return (state1 > state2) ? (1 >= (double)rand() / (RAND_MAX)) :
+                (exp((state1 - state2) * pow(t, -1)) >= (double)rand() / (RAND_MAX));
+        }
+    };
 
-    //domain bounds
-    T * lower_bound;
-    T * upper_bound;
+    template<class T> class SimulatedAnnealing : public BlackBoxSolver<T>, public NextCandidateDistribution<T>, public AcceptanceFunction<T>, public CoolingSchedule<T> {
+    public:
+        struct Option {
 
-    //Energy function
-    std::function<T(const T* const)> E;
+            //number of iterations of simulated_Annealing(create a stoping rule!!!!!)
+            size_t max_k = 300;
 
-    //Temperature change function
-    std::function<size_t(const size_t, const size_t)> Temp = 
-        [](const size_t max_k, size_t iteration) {return max_k - iteration; };
+            //DownHill step per coordinate(used in DownHill->neighbour)
+            T accuracy = 0.001;
 
-    //Probability function
-    std::function<bool(const T, const T, const size_t)> P =
-        [](const T state1, const T state2, const size_t t) {return (state1 > state2) ? (1 >= (double)rand() / (RAND_MAX)) :
-                                                            (exp((state1 - state2) * pow(t, -1)) >= (double)rand() / (RAND_MAX)); };
+            //delta-neighbourhood from TemperatureJump proportional to the function domain
+            T delta = 0.25;
 
-};
+        };
 
-template<class T>
-void TemperatureJump(struct Option<T> opt, T* state, T* new_state) {
-    for (int i = 0; i < opt.n; i++) {
-        T num;
-        do {
-            num = new_state[i] + (2 * ((double)rand() / (RAND_MAX)) - 1) * (opt.upper_bound[i] - opt.lower_bound[i]) * opt.delta;
-        } while (num >= opt.upper_bound[i] || num <= opt.lower_bound[i]);
-        new_state[i] = num;
-    }
-}
+        //search for a less-energy neighbour in accurancy-neighbourhood
+        void neighbour(int n, T* current_point, T* new_point, const T* lower_bound, const T* upper_bound, const std::function<T(const T*)>& f) {
+            T num, num2, num3;
+            for (int i = 0; i < n && f(current_point) <= f(new_point); i++) {
+                std::copy(current_point, current_point + n, new_point);
+                num = (upper_bound[i] - lower_bound[i]) * opt.accuracy;
+                num2 = std::min(num, new_point[i] - lower_bound[i]);
+                num3 = std::min(num, upper_bound[i] - new_point[i]);
+                new_point[i] -= num2;
+                if (f((new_point)) >= f(current_point))
+                    new_point[i] += num2;
+                new_point[i] += num3;
+                if (f(new_point) >= f(current_point))
+                    new_point[i] -= num3;
+            }
+        }
 
-//sezrch for a less-energy neighbour in accurancy-neighbourhood
-template<class T>
-void neighbour(const struct Option<T>& opt, T* state, T* new_state) {
-    T num, num2, num3;
-    for (int i = 0; i < opt.n && opt.E(state) <= opt.E(new_state); i++) {
-        std::copy(state, state + opt.n, new_state);
-        num = (opt.upper_bound[i] - opt.lower_bound[i]) * opt.accuracy;
-        num2 = std::min(num, new_state[i] - opt.lower_bound[i]);
-        num3 = std::min(num, opt.upper_bound[i] - new_state[i]);
-        new_state[i] -= num2;
-        if (opt.E((new_state)) >= opt.E(state)) 
-            new_state[i] += num2;
-        new_state[i] += num3;
-        if (opt.E(new_state) >= opt.E(state)) 
-            new_state[i] -= num3;
-    }
-}
+        //descent to a local minimum
+        void downHill(int n, T* current_point, const T* lower_bound, const T* upper_bound, const std::function<T(const T*)>& f) {
+            T* new_point = new T[n];
+            std::copy(current_point, current_point + n, new_point);
+            neighbour(n, current_point, new_point, lower_bound, upper_bound, f);
+            while (f(current_point) > f(new_point)) {
+                std::copy(new_point, new_point + n, current_point);
+                neighbour(n, current_point, new_point, lower_bound, upper_bound, f);
+            }
+            delete[] new_point;
+        }
 
-//descent to a local minimum
-template<class T>
-void DownHill(const struct Option<T>& opt, T* state) {
-    T* new_state = new T[opt.n];
-    std::copy(state, state + opt.n, new_state);
-    neighbour(opt, state, new_state);
-    while (opt.E(state) > opt.E(new_state)) {
-        std::copy(new_state, new_state + opt.n, state);
-        neighbour(opt, state, new_state);
-    }
-    delete[] new_state;
-}
 
-template<class T>
-T* simulated_Annealing(const struct Option<T>& opt, T* state) {
-    std::copy(opt.lower_bound, opt.lower_bound + opt.n, state);
-    T* new_state = new T[opt.n];
-    std::copy(state, state + opt.n, new_state);
-    for (size_t i = 0; i < opt.max_k; i++) {
-        TemperatureJump(opt, state, new_state);
-        if (opt.P(opt.E(state), opt.E(new_state), opt.Temp(opt.max_k, i)))
-            std::copy(new_state, new_state + opt.n, state);
-    }
-    DownHill(opt, state);
-    delete[] new_state;
-    return state;
-}
 
-template<class T>
-std::string about(const struct Option<T>& opt) {
-    std::ostringstream options;
+        T search(int n, T* current_point, const T* lower_bound, const T* upper_bound, const std::function<T(const T*)>& f) override {
+            T* new_point = new T[n];
+            std::copy(current_point, current_point + n, new_point);
+            for (size_t i = 0; i < opt.max_k; i++) { //stoping criterion
+                this->temperatureJump(n, new_point, lower_bound, upper_bound, opt.delta);
+                if (this->metropolis(f(current_point), f(new_point), this->coolingSchedule(opt.max_k, i))) 
+                    std::copy(new_point, new_point + n, current_point);
+            }
+            downHill(n, current_point, lower_bound, upper_bound, f);
+            delete[] new_point;
+            return f(current_point);
+        }
+
+        std::string about() {
+            std::ostringstream options;
             options << "Simulated Annealing\n";
             options << "options:\n";
-            options << "space dimencion = " << opt.n << "\n";
             options << "number of steps = " << opt.max_k << "\n";
             options << "accuracy-neighbourhood of the descent (after T=0) = " << opt.accuracy << "\n";
             options << "delta-neighbourhood of the temperature jump = " << opt.delta << "\n";
-            options << "lower_bound = [ ";
-            for(size_t i = 0; i < opt.n; i++) 
-                options << " " << opt.lower_bound[i];
-            options << " ]\n";
-            options << "upper_bound = [ ";
-            for(size_t i = 0; i < opt.n; i++) 
-                options << " " << opt.upper_bound[i];
-            options << " ]\n";
             return options.str();
+        }
+
+        Option& getOptions() {
+            return opt;
+        }
+
+    private:
+        Option opt;
+    };
 }
+
+#endif
