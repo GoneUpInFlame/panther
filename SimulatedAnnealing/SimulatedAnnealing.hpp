@@ -18,38 +18,27 @@
 namespace panther {
     template<class T> class NextCandidateDistribution {
     public:
-        void temperatureJump(int n, T* new_point, const T* lower_bound, const T* upper_bound, T delta) {
-            for (int i = 0; i < n; i++) {
-                T num;
-                do {
-                    num = new_point[i] + (2 * ((double)rand() / (RAND_MAX)) - 1) * (upper_bound[i] - lower_bound[i]) * delta;
-                } while (num >= upper_bound[i] || num <= lower_bound[i]);
-                new_point[i] = num;
-            }
-        }
+        virtual void nextCandidate(int n, T* point, const T* lower_bound, const T* upper_bound, T delta) = 0;
     };
 
     template<class T> class CoolingSchedule {
     public:
-        T coolingSchedule(const size_t max_k, size_t iteration) {
-            return max_k - iteration;
-        }
+        virtual T coolingSchedule(const size_t max_k, size_t iteration) = 0;
     };
 
     template<class T> class StopingCriterion {
     public:
+        virtual bool stoping() = 0;
     };
 
     template<class T> class AcceptanceFunction {
     public:
-        bool metropolis(const T state1, const T state2, const size_t t) {
-            return (state1 > state2) ? (1 >= (double)rand() / (RAND_MAX)) :
-                (exp((state1 - state2) * pow(t, -1)) >= (double)rand() / (RAND_MAX));
-        }
+        virtual bool acceptance(const T state1, const T state2, const size_t t) = 0;
     };
 
-    template<class T> class SimulatedAnnealing : public BlackBoxSolver<T>, public NextCandidateDistribution<T>, public AcceptanceFunction<T>, public CoolingSchedule<T> {
+    template<class T> class SimulatedAnnealing : public BlackBoxSolver<T> {
     public:
+        SimulatedAnnealing(NextCandidateDistribution<T>& next, AcceptanceFunction<T>& accept, CoolingSchedule<T>& t) : D(next), A(accept), Temp(t) {}
         struct Option {
 
             //number of iterations of simulated_Annealing(create a stoping rule!!!!!)
@@ -98,8 +87,8 @@ namespace panther {
             T* new_point = new T[n];
             std::copy(current_point, current_point + n, new_point);
             for (size_t i = 0; i < opt.max_k; i++) { //stoping criterion
-                this->temperatureJump(n, new_point, lower_bound, upper_bound, opt.delta);
-                if (this->metropolis(f(current_point), f(new_point), this->coolingSchedule(opt.max_k, i))) 
+                D.nextCandidate(n, new_point, lower_bound, upper_bound, opt.delta);
+                if (A.acceptance(f(current_point), f(new_point), Temp.coolingSchedule(opt.max_k, i)))
                     std::copy(new_point, new_point + n, current_point);
             }
             downHill(n, current_point, lower_bound, upper_bound, f);
@@ -122,6 +111,9 @@ namespace panther {
         }
 
     private:
+        NextCandidateDistribution<T>& D;
+        AcceptanceFunction<T>& A;
+        CoolingSchedule<T>& Temp;
         Option opt;
     };
 }
