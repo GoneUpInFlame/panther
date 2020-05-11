@@ -1,5 +1,5 @@
 ROOT = ../
-BINS = testSimulatedAnnealing.exe 
+BINS = testSA.exe 
 
 include $(ROOT)/all.inc
 -include deps.inc
