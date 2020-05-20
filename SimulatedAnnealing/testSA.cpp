@@ -6,7 +6,10 @@
 #include <cstdlib>
 #include <iostream>
 #include <cmath>
-#include "SimulatedAnnealing.hpp"
+#include <ctime>
+//#include "SAstandart.hpp"
+//#include "SAparallel1.hpp"
+#include "SAparallel2.hpp"
 #include "SAComponents.cpp"
 
 using namespace std;
@@ -21,14 +24,19 @@ using namespace panther;
 int main() {
     RandomCandidate<double> D;
     Metropolis<double> A;
-    Cooling<double> Temp;
+    StandartCooling<double> Temp;
+    StandartStoping<double> Stop;
     double num1[1], num2[1];
     num1[0] = -30;
     num2[0] = 70;
     double num[1];
-    std::fill(num, num + 1, 20);
-    SimulatedAnnealing<double> SA(D, A, Temp);
+    std::fill(num, num + 1, 2);
+    srand(time(0));
+    SimulatedAnnealing<double> SA(D, A, Temp, Stop);
     std::cout << SA.about();
-    std::cout << SA.search(1, num, num1, num2, func);
+    std::cout << SA.search(1, num, num1, num2, func) << std::endl;
+    std::cout << "runtime = " << clock() / 1000.0 << std::endl;
+    std::cout << num[0] << std::endl;
     return 0;
+
 }
