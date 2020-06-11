@@ -9,7 +9,6 @@
 #include <iostream>
 #include "sannestand.hpp"
 #include "sannecomponents.hpp"
-#include "parallel(no).hpp"
 
 using namespace std;
 
@@ -29,7 +28,7 @@ int main() {
     srand(time(0));
 
     double delta = 0.025;
-    RandomCandidate<double> D;
+    RandomCandidate<double> D(delta);
 
     Metropolis<double> A;
 
@@ -38,7 +37,7 @@ int main() {
     unsigned int maxIter = 3000;
     double accuracy = 0.01;
     unsigned int stopingIter = 10;
-    StandartStoping<double> Stop;
+    StandartStoping<double> Stop(maxIter, accuracy, stopingIter);
 
     StandartSimulatedAnnealing<double> SA(D, A, Temp, Stop);
     std::cout << SA.about();
