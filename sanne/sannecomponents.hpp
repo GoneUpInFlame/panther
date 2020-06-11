@@ -82,7 +82,7 @@ public:
         if (fOldPoint - fNewPoint <= accuracy && fOldPoint - fNewPoint >= 0) {
             nowIter += 1;
             if (stopingIter == nowIter) {
-                std::cout << "Stoping with low value difference on iteration " << iter << std::endl;
+                stopInfo << "Stoping with low value difference on iteration " << iter << std::endl;
                 return 0;
             }
         }
@@ -90,7 +90,7 @@ public:
             nowIter = 0;
         }
         if (iter == maxIter) {
-            std::cout << "Stoping with iteration limit." << std::endl;
+            stopInfo << "Stoping with iteration limit." << std::endl;
             return 0;
         }
         return 1;
@@ -103,6 +103,12 @@ public:
         options << "number of steps = " << maxIter << "\n";
         options << "Minimum difference between the value of the previous point and the new " << accuracy << "\n";
         options << "Maximum number of iterations at which the difference between points is less than accuracy " << stopingIter << "\n";
+        return options.str();
+    }
+
+    std::string aboutStoping() override {
+        std::ostringstream options;
+        options << stopInfo << "\n";
         return options.str();
     }
 private:
@@ -122,6 +128,7 @@ private:
      * Maximum number of iterations at which the difference between points is less than accuracy
      */
     unsigned int stopingIter;
+    std::ostringstream stopInfo;
 };
 
 #endif

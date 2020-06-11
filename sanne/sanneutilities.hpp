@@ -53,6 +53,7 @@ namespace panther {
          */
         virtual bool stoping(unsigned int iter, T fOldPoint, T fNewPoint) = 0;
         virtual std::string about() = 0;
+        virtual std::string aboutStoping() = 0;
     };
 
     /*
