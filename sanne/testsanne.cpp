@@ -9,12 +9,13 @@
 #include <iostream>
 #include "sannestand.hpp"
 #include "sannecomponents.hpp"
+#include "parallel(no).hpp"
 
 using namespace std;
 
 //input function(for example)
 double func(const double* const x) {
-    return /*(x[0] - 10)*(x[0] - 10)*/ /*5 * sin(2 * x[0]) + x[0] * x[0]*/ (x[0] * x[0] - 1) / (x[0] * x[0] + 1);
+    return /*(x[0] - 10)*(x[0] - 10)*/ 5 * sin(2 * x[0]) + x[0] * x[0] /*(x[0] * x[0] - 1) / (x[0] * x[0] + 1)*/;
 }
 
 using namespace panther;
@@ -28,7 +29,7 @@ int main() {
     srand(time(0));
 
     double delta = 0.025;
-    RandomCandidate<double> D(delta);
+    RandomCandidate<double> D;
 
     Metropolis<double> A;
 
@@ -37,11 +38,12 @@ int main() {
     unsigned int maxIter = 3000;
     double accuracy = 0.01;
     unsigned int stopingIter = 10;
-    StandartStoping<double> Stop(maxIter, accuracy, stopingIter);
+    StandartStoping<double> Stop;
 
     StandartSimulatedAnnealing<double> SA(D, A, Temp, Stop);
     std::cout << SA.about();
     std::cout << SA.search(1, startPoint, lowerBound, upperBound, func) << std::endl;
+    std::cout << Stop.aboutStoping();
 
     std::cout << "runtime = " << clock() / 1000.0 << std::endl;
     std::cout << startPoint[0] << std::endl;

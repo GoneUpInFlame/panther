@@ -12,6 +12,7 @@
 #include <random>
 #include "sannestand.hpp"
 #include "sanneutilities.hpp"
+#include <string>
 
 using namespace std;
 
@@ -82,7 +83,7 @@ public:
         if (fOldPoint - fNewPoint <= accuracy && fOldPoint - fNewPoint >= 0) {
             nowIter += 1;
             if (stopingIter == nowIter) {
-                stopInfo << "Stoping with low value difference on iteration " << iter << std::endl;
+                stopInfo += "Stoping with low value difference on iteration " + std::to_string(iter) + "\n";
                 return 0;
             }
         }
@@ -90,7 +91,7 @@ public:
             nowIter = 0;
         }
         if (iter == maxIter) {
-            stopInfo << "Stoping with iteration limit." << std::endl;
+            stopInfo += "Stoping with iteration limit.\n";
             return 0;
         }
         return 1;
@@ -108,7 +109,7 @@ public:
 
     std::string aboutStoping() override {
         std::ostringstream options;
-        options << stopInfo << "\n";
+        options << stopInfo;
         return options.str();
     }
 private:
@@ -128,7 +129,7 @@ private:
      * Maximum number of iterations at which the difference between points is less than accuracy
      */
     unsigned int stopingIter;
-    std::ostringstream stopInfo;
+    std::string stopInfo;
 };
 
 #endif

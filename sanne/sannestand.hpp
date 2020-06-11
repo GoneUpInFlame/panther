@@ -8,7 +8,7 @@
 
 #include <algorithm>
 #include <cmath>
-#include <common/bbsolver.hpp>
+#include "bbsolver.hpp"
 #include <cstdlib>
 #include <functional>
 #include <iostream>
