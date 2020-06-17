@@ -53,7 +53,7 @@ namespace panther {
          */
         virtual bool stoping(unsigned int iter, T fOldPoint, T fNewPoint) = 0;
         virtual std::string about() = 0;
-        virtual std::string aboutStoping() = 0;
+        virtual std::pair<unsigned int, unsigned int> aboutStoping() = 0;
     };
 
     /*
@@ -68,7 +68,7 @@ namespace panther {
          * @param t temperature value
          * @return true if candidate point needs to be accepted
          */
-        virtual bool acceptance(T state1, T state2, unsigned int t) const = 0;
+        virtual bool acceptance(T state1, T state2, T t) const = 0;
         virtual std::string about() = 0;
     };
 }

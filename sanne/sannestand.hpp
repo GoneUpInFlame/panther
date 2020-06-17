@@ -21,28 +21,29 @@
 namespace panther {
     /**
      * Standart Simulated Annealing method
-     * Discription P.M. Pardalos and H.E. Rom.eijn (eds.), Handbook of Global Optimization, Volume 2, 179-229. © 2002 Kluwer Academic Publishers. 
+     * Discription P.M. Pardalos and H.E. Rom.eijn (eds.), Handbook of Global Optimization, Volume 2, 179-229. © 2002 Kluwer Academic Publishers.
      */
     template<class T> class StandartSimulatedAnnealing : public BlackBoxSolver<T> {
     public:
-	/**
-	 * Construct Standart Simulated Annealing class
-	 * @param next class that defines the next candidate point
-	 * @param accept class that determines whether to go to a next candidate point
-	 * @param t class that determines the temperature at the current iteration
-	 * @param stop class that determines whether to stop the algorithm at the current iteration
-	 */
+	      /**
+	       * Construct Standart Simulated Annealing class
+	       * @param next class that defines the next candidate point
+	       * @param accept class that determines whether to go to a next candidate point
+	       * @param t class that determines the temperature at the current iteration
+	       * @param stop class that determines whether to stop the algorithm at the current iteration
+	       */
         StandartSimulatedAnnealing(NextCandidateDistribution<T>& next, AcceptanceFunction<T>& accept,
             CoolingSchedule<T>& t, StopingCriterion<T>& stop) : mD(next), mA(accept), mTemp(t), mStop(stop) {}
 
-	/**
-	 * Performs search
-	 * @param n space dimension
-	 * @param currentPoint start point and result
-	 * @param lowerBound lower bound of domain
-	 * @param f target function
-	 * @return value of the result point
-	 */
+        /**
+	       * Performs search
+	       * @param n space dimension
+	       * @param currentPoint start point and result
+	       * @param lowerBound lower bound of domain
+         * @param upperBound upper bound of domain
+	       * @param f target function
+	       * @return value of the result point
+	       */
         T search(int n, T* currentPoint, const T* lowerBound, const T* upperBound, const std::function<T(const T*)>& f) override {
             T* newPoint = new T[n];
             std::copy(currentPoint, currentPoint + n, newPoint);

@@ -25,26 +25,27 @@ int main() {
     std::fill(lowerBound, lowerBound + n, -3);
     std::fill(upperBound, upperBound + n, 7);
     std::fill(startPoint, startPoint + n, 2);
-    srand(time(0));
 
     double delta = 0.025;
-    RandomCandidate<double> D(delta);
+    RandomCandidate<double> D;
 
     Metropolis<double> A;
 
-    StandartCooling<double> Temp;
+    QuickCooling<double> Temp;
 
     unsigned int maxIter = 3000;
     double accuracy = 0.01;
     unsigned int stopingIter = 10;
-    StandartStoping<double> Stop(maxIter, accuracy, stopingIter);
+    StandartStoping<double> Stop;
 
     StandartSimulatedAnnealing<double> SA(D, A, Temp, Stop);
     std::cout << SA.about();
+    unsigned int start_time = clock();
     std::cout << SA.search(1, startPoint, lowerBound, upperBound, func) << std::endl;
-    std::cout << Stop.aboutStoping();
+    unsigned int end_time = clock();
+    std::cout << "runtime = " << (end_time - start_time) / 1000.0 << std::endl;
+    std::cout << "Stoping with <low value diference, iteration limit>: <" << Stop.aboutStoping().first << ", " << Stop.aboutStoping().second << ">" << std::endl;
 
-    std::cout << "runtime = " << clock() / 1000.0 << std::endl;
     std::cout << startPoint[0] << std::endl;
     return 0;
 
