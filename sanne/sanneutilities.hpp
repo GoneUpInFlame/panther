@@ -6,6 +6,8 @@
 #ifndef SANNEUTILITIES_HPP
 #define SANNEUTILITIES_HPP
 
+#include <deque>
+
 using namespace std;
 
 namespace panther {
@@ -14,15 +16,15 @@ namespace panther {
      */
     template<class T> class NextCandidateDistribution {
     public:
-	/*
+	      /*
          * Performs search for a candidate point
          * @param n space dimension
          * @param point start point and result
          * @param lowerBound lower bound of target function domain
          * @param upperBound upper bound of target function domain
-         * @param delta step proportional to the function domain
          */
-        virtual void nextCandidate(int n, T* point, const T* lowerBound, const T* upperBound) = 0;
+        virtual void nextCandidate(int n, T* point, const T* lowerBound,
+          const T* upperBound) const = 0;
         virtual std::string about() = 0;
     };
 
@@ -44,16 +46,16 @@ namespace panther {
      */
     template<class T> class StopingCriterion {
     public:
-	/*
+        /*
          * Attempt to stop Simulated Annealing
          * @param iter current iteration of Simulated Annealing
-         * @param fOldPoint function value in previous point
-         * @param fNewPoint function value in new point
+         * @param informationLastPoints deque of remembered points
+         * @param numberStop maximum number of remembered points
          * @return true if the work of Simulated Annealing continues
          */
-        virtual bool stoping(unsigned int iter, T fOldPoint, T fNewPoint) = 0;
+        virtual bool stoping(unsigned int iter, int numberStop,
+          std::deque<T>& informationLastPoints) const = 0;
         virtual std::string about() = 0;
-        virtual std::pair<unsigned int, unsigned int> aboutStoping() = 0;
     };
 
     /*

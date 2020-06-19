@@ -7,9 +7,10 @@
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
-#include "sannestand.hpp"
-#include "sannecomponents.hpp"
-
+#include <sanne/sannestand.hpp>
+#include <sanne/sannecomponents.hpp>
+#include "parallelsolver.hpp"
+#include "parallelcomponents.hpp"
 
 using namespace std;
 
@@ -41,20 +42,24 @@ int main() {
 
     QuickCooling<double> Temp;
 
-    unsigned int maxIter = 6000;
-    double accuracy = 0.025;
+    unsigned int maxIter = 1000;
+    double accuracy = 0.01;
     unsigned int stopingIter = 10;
-    bool printable = true;
+    bool printable = false;
     StandartStoping<double> Stop(maxIter, accuracy, stopingIter, printable);
 
     StandartSimulatedAnnealing<double> SA(D, A, Temp, Stop);
-    std::cout << SA.about();
+    UniformStartPoints<double> P;
+    ParallelSolver<double> G(SA, P);
+    G.getOptions().pointsNum = 300;
+    G.getOptions().pl = true;
+    std::cout << G.about();
 
     std::fill(lowerBound, lowerBound + n, 5);
     std::fill(upperBound, upperBound + n, 15);
     std::fill(startPoint, startPoint + n, 7);
     unsigned int start_time = clock();
-    std::cout << "find " << SA.search(n, startPoint, lowerBound, upperBound, func) << std::endl;
+    std::cout << "find " << G.search(n, startPoint, lowerBound, upperBound, func) << std::endl;
     unsigned int end_time = clock();
     std::cout << "runtime = " << (end_time - start_time) / 1000.0 << std::endl;
     std::cout << "at point " << startPoint[0] << std::endl;
@@ -63,7 +68,7 @@ int main() {
     std::fill(upperBound, upperBound + n, 7);
     std::fill(startPoint, startPoint + n, 2);
     start_time = clock();
-    std::cout << "find " << SA.search(n, startPoint, lowerBound, upperBound, func2) << std::endl;
+    std::cout << "find " << G.search(n, startPoint, lowerBound, upperBound, func2) << std::endl;
     end_time = clock();
     std::cout << "runtime = " << (end_time - start_time) / 1000.0 << std::endl;
     std::cout << "at point " << startPoint[0] << std::endl;
@@ -72,7 +77,7 @@ int main() {
     std::fill(upperBound, upperBound + n, 4);
     std::fill(startPoint, startPoint + n, 2);
     start_time = clock();
-    std::cout << "find " << SA.search(n, startPoint, lowerBound, upperBound, func3) << std::endl;
+    std::cout << "find " << G.search(n, startPoint, lowerBound, upperBound, func3) << std::endl;
     end_time = clock();
     std::cout << "runtime = " << (end_time - start_time) / 1000.0 << std::endl;
     std::cout << "at point " << startPoint[0] << std::endl;

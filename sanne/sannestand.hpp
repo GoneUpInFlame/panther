@@ -31,9 +31,10 @@ namespace panther {
 	       * @param accept class that determines whether to go to a next candidate point
 	       * @param t class that determines the temperature at the current iteration
 	       * @param stop class that determines whether to stop the algorithm at the current iteration
+           * @param numberI number of points to remember
 	       */
         StandartSimulatedAnnealing(NextCandidateDistribution<T>& next, AcceptanceFunction<T>& accept,
-            CoolingSchedule<T>& t, StopingCriterion<T>& stop) : mD(next), mA(accept), mTemp(t), mStop(stop) {}
+            CoolingSchedule<T>& t, StopingCriterion<T>& stop, int numberI = 20) : mD(next), mA(accept), mTemp(t), mStop(stop), numberStopP(numberI) {}
 
         /**
 	       * Performs search
@@ -43,23 +44,29 @@ namespace panther {
          * @param upperBound upper bound of domain
 	       * @param f target function
 	       * @return value of the result point
-	       */
+         */
         T search(int n, T* currentPoint, const T* lowerBound, const T* upperBound, const std::function<T(const T*)>& f) override {
             T* newPoint = new T[n];
             std::copy(currentPoint, currentPoint + n, newPoint);
             T fOldPoint = f(currentPoint);
+            std::deque<T> informationLastPoints;
+            informationLastPoints.push_back(fOldPoint);
             unsigned int i = 0;
             do {
                 mD.nextCandidate(n, newPoint, lowerBound, upperBound);
                 if (mA.acceptance(f(currentPoint), f(newPoint), mTemp.coolingSchedule(i))) {
                     fOldPoint = f(currentPoint);
                     std::copy(newPoint, newPoint + n, currentPoint);
+                    if (informationLastPoints.size() == numberStopP)
+                        informationLastPoints.pop_front();
+                    informationLastPoints.push_back(f(currentPoint));
                 }
                 i++;
-            } while (mStop.stoping(i - 1, fOldPoint, f(newPoint)));
+            } while (mStop.stoping(i - 1, informationLastPoints.size(), informationLastPoints));
             delete[] newPoint;
             return f(currentPoint);
         }
+
 
         std::string about() {
             std::ostringstream options;
@@ -76,6 +83,7 @@ namespace panther {
         AcceptanceFunction<T>& mA;
         CoolingSchedule<T>& mTemp;
         StopingCriterion<T>& mStop;
+        int numberStopP;
     };
 }
 

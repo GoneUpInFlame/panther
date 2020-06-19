@@ -13,6 +13,7 @@
 #include "sannestand.hpp"
 #include "sanneutilities.hpp"
 #include <string>
+#include <deque>
 
 using namespace std;
 
@@ -27,10 +28,10 @@ public:
     RandomCandidate(T step = 0.025) {
         mOpt.delta = step;
     }
-    void nextCandidate(int n, T* point, const T* lowerBound, const T* upperBound) override {
+    void nextCandidate(int n, T* point, const T* lowerBound, const T* upperBound) const override {
         std::random_device rd;
         std::mt19937 gen(rd());
-        std::uniform_int_distribution<> dis(-1., 1.);
+        std::uniform_int_distribution<> dis(-1, 1);
         for (unsigned int i = 0; i < n; i++) {
             T num;
             do {
@@ -77,6 +78,9 @@ template<class T> class QuickCooling : public panther::CoolingSchedule<T> {
 public:
 
     struct Options {
+        /*
+         * Start temperature
+         */
         T temp0;
     };
 
@@ -104,6 +108,9 @@ private:
 template<class T> class  BoltzmanCooling : public panther::CoolingSchedule<T> {
 public:
     struct Options {
+        /*
+         * Start temperature
+         */
         T temp0;
     };
 
@@ -112,7 +119,7 @@ public:
     }
 
     T coolingSchedule(unsigned int iteration) const override {
-        return mOpt.temp0 / (T)log(iteration + 3);
+        return mOpt.temp0 / (T)log(iteration + exp(1));
     }
 
     std::string about() override {
@@ -143,31 +150,35 @@ public:
         /**
          * Maximum number of iterations at which the difference between points is less than accuracy
          */
-         /**
-          * Maximum number of iterations at which the difference between points is less than accuracy
-          */
         unsigned int stopingIter;
+        /**
+         * Is stoping information printable
+         */
+        bool printable;
     };
 
-    StandartStoping(unsigned int maxI = 3000, T acc = 0.01, unsigned int stopIt = 1) {
+    StandartStoping(unsigned int maxI = 3000, T acc = 0.01, unsigned int stopIt = 1, bool printable = false) {
         mOpt.maxIter = maxI;
         mOpt.accuracy = acc;
         mOpt.stopingIter = stopIt;
+        mOpt.printable = printable;
     }
 
-    bool stoping(unsigned int iter, T fOldPoint, T fNewPoint) override {
-        if (fOldPoint - fNewPoint <= mOpt.accuracy && fOldPoint - fNewPoint >= 0) {
-            nowIter += 1;
-            if (mOpt.stopingIter == nowIter) {
-                stopInfo.first++;
-                return 0;
+    bool stoping(unsigned int iter, int numberStop, std::deque<T>& infLastPoints) const override {
+        int nowIter = 0;
+        for (int j = 0; j < infLastPoints.size() - 1; j++) {
+            if (infLastPoints[j] - infLastPoints[j + 1] <= mOpt.accuracy && infLastPoints[j] - infLastPoints[j + 1] >= 0) {
+                nowIter++;
+            } else {
+                nowIter = 0;
             }
         }
-        else {
-            nowIter = 0;
+        if (nowIter >= mOpt.stopingIter) {
+            if (mOpt.printable) std::cout << "Stoping with low value difference on iteration " << iter << std::endl;
+            return 0;
         }
         if (iter == mOpt.maxIter) {
-            stopInfo.second++;
+            if (mOpt.printable) std::cout << "Stoping with iteration limit." << std::endl;
             return 0;
         }
         return 1;
@@ -182,22 +193,13 @@ public:
         options << "Maximum number of iterations at which the difference between points is less than accuracy " << mOpt.stopingIter << "\n";
         return options.str();
     }
-
-    std::pair<unsigned int, unsigned int> aboutStoping() override {
-        return stopInfo;
-    }
-
+  
     Options& getOptions() {
         return mOpt;
     }
 
 private:
-    /**
-     * Curent iteration number with difference lower accuracy
-     */
-    unsigned int nowIter = 0;
     Options mOpt;
-    std::pair<unsigned int, unsigned int> stopInfo;
 };
 
 #endif
