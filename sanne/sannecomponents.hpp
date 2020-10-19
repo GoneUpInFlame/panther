@@ -1,6 +1,6 @@
 /*
  * File: sannecomponents.hpp
- * Author: Maksim Galynchik
+ * Author: Maksim Galynchik, Romanova Karina
  */
 
 #ifndef SANNECOMPONENTS_HPP

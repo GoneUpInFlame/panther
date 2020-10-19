@@ -1,6 +1,6 @@
 /*
  * File: parallelutilities.cpp
- * Author: Maksim Galynchik
+ * Author: Maksim Galynchik, Romanova Karina
  */
 
 #ifndef PARALLELUTILITIES_HPP

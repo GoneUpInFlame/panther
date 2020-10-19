@@ -1,6 +1,6 @@
 /*
  * File: sanneutilities.cpp
- * Author: Maksim Galynchik
+ * Author: Maksim Galynchik, Romanova Karina
  */
 
 #ifndef SANNEUTILITIES_HPP

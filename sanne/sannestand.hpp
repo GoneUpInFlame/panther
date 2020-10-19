@@ -1,6 +1,6 @@
 /*
  * File:   sannestand.hpp
- * Author: Maksim Galynchik
+ * Author: Maksim Galynchik, Romanova Karina
  */
 
 #ifndef SANNESTAND_HPP

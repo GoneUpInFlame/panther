@@ -1,6 +1,6 @@
 /*
  * File: parallelcomponents.hpp
- * Author: Maksim Galynchik
+ * Author: Maksim Galynchik, Romanova Karina
  */
 
 #ifndef PARALLELCOMPONENTS_HPP
